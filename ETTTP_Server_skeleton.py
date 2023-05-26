@@ -34,6 +34,11 @@ if __name__ == '__main__':
         
         ###################################################################
         # Send start move information to peer
+        if start=="0":
+          server_socket.send("server == 0, start는 server가")
+          
+        else : 
+          server_socket.send("server == 1, start는 client가")
     
     
         ######################### Fill Out ################################
