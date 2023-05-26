@@ -32,7 +32,20 @@ if __name__ == '__main__':
         
         ###################################################################
         # Receive who will start first from the server
-    
+         start = client.socket.recv(SIZE).decode()
+         if start =="0":
+            #client waiting
+            # Send ACK
+            server_socket.send(b"ACK")
+         else :
+            # Send ACK
+            server_socket.send(b"ACK")
+            # Start game
+            root = TTT(target_socket=client_socket, src_addr=MY_IP,dst_addr=SERVER_IP)
+            root.play(start_user=start)
+            root.mainloop()
+            client_socket.close()
+            
     
         ######################### Fill Out ################################
         # Send ACK 
@@ -41,9 +54,4 @@ if __name__ == '__main__':
         ###################################################################
         
         # Start game
-        root = TTT(target_socket=client_socket, src_addr=MY_IP,dst_addr=SERVER_IP)
-        root.play(start_user=start)
-        root.mainloop()
-        client_socket.close()
-        
-        
+      
