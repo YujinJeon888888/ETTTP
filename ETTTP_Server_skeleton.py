@@ -39,6 +39,7 @@ if __name__ == '__main__':
           
         else : 
           server_socket.send("server == 1, start는 client가")
+          ack == correct
     
     
         ######################### Fill Out ################################
