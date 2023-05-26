@@ -34,12 +34,21 @@ if __name__ == '__main__':
         
         ###################################################################
         # Send start move information to peer
-        if start=="0":
-          server_socket.send("server == 0, start는 server가")
-          
+        if start==0 :
+          client_socket.send(b'0')
+          #server == 0, start는 server가
+          print("start는 0")
         else : 
-          server_socket.send("server == 1, start는 client가")
-          ack == correct
+          client_socket.send(b'1')
+          #server == 1, start는 client가
+          print("start는 1")
+        ack = client_socket.recv(SIZE).decode()
+        if ack =="ACK":
+             # Receive ack - if ack is correct, start game
+            root = TTT(client=False,target_socket=client_socket, src_addr=MY_IP,dst_addr=client_addr[0])
+            root.play(start_user=start)
+            root.mainloop()           
+                   
     
     
         ######################### Fill Out ################################
@@ -48,9 +57,7 @@ if __name__ == '__main__':
         
         ###################################################################
         
-        root = TTT(client=False,target_socket=client_socket, src_addr=MY_IP,dst_addr=client_addr[0])
-        root.play(start_user=start)
-        root.mainloop()
+ 
         
         client_socket.close()
         
