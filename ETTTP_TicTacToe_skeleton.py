@@ -252,13 +252,16 @@ class TTT(tk.Tk):
         self.t_debug.delete(1.0,"end")
         
         ###################  Fill Out  #######################
-        
+        '''
+        Check if the selected location is already taken or not
+        '''
+
         '''
         Send message to peer
         '''
         
         '''
-        Get ack, extract move from the input
+        Get ack
         '''
         
         loc = 5 # peer's move, from 0 to 8

@@ -1,4 +1,4 @@
-'''
+﻿'''
   ETTTP_Client_skeleton.py
  
   34743-02 Information Communications
@@ -9,6 +9,7 @@
  
  '''
 
+from http import client
 import random
 import tkinter as tk
 from socket import *
@@ -29,29 +30,27 @@ if __name__ == '__main__':
     
     with socket(AF_INET, SOCK_STREAM) as client_socket:
         client_socket.connect(SERVER_ADDR)  
-        
+        print("연결되었습니다.")
         ###################################################################
         # Receive who will start first from the server
-         start = client.socket.recv(SIZE).decode()
-         if start =="0":
-            #client waiting
-            # Send ACK
-            server_socket.send(b"ACK")
-         else :
-            # Send ACK
-            server_socket.send(b"ACK")
-            # Start game
-            root = TTT(target_socket=client_socket, src_addr=MY_IP,dst_addr=SERVER_IP)
-            root.play(start_user=start)
-            root.mainloop()
-            client_socket.close()
-            
-    
         ######################### Fill Out ################################
-        # Send ACK 
-        
-        
+
+        if client_socket.recv(SIZE).decode()=="start is server":
+            start=0
+            print("start = 0")
+            # Send ACK 
+            client_socket.send(bytes("ACK start is server","utf-8"))
+        else :
+            start=1
+            print("start=1")
+            # Send ACK 
+            client_socket.send(bytes("ACK start is client","utf-8"))
         ###################################################################
         
         # Start game
-      
+        root = TTT(target_socket=client_socket, src_addr=MY_IP,dst_addr=SERVER_IP)
+        root.play(start_user=start)
+        root.mainloop()
+        client_socket.close()
+        
+        
