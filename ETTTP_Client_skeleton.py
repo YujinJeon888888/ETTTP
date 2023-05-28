@@ -42,7 +42,7 @@ if __name__ == '__main__':
             client_socket.send(bytes("ACK start is server","utf-8"))
         else :
             start=1
-            print("start=1")
+            print("start = 1")
             # Send ACK 
             client_socket.send(bytes("ACK start is client","utf-8"))
         ###################################################################
