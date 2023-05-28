@@ -212,8 +212,8 @@ class TTT(tk.Tk):
         If is not, close socket and quit
         '''
         ###################  Fill Out  #######################
-        msg =  "message" # get message using socket
-
+       msg =  "message" # get message using socket
+        
         msg_valid_check = False
          
         
@@ -222,8 +222,9 @@ class TTT(tk.Tk):
             self.quit()
             return
         else:  # If message is valid - send ack, update board and change turn
+            client_socket.send(bytes("ACK"))
 
-            loc = 5 # received next-move
+            #loc = 5 # received next-move
             
             ######################################################   
             
@@ -285,13 +286,18 @@ class TTT(tk.Tk):
         Function to send message to peer using button click
         selection indicates the selected button
         '''
-        row,col = divmod(selection,3)
+        row,col = divmod(selection,3) #rowëŠ” 3ìœ¼ë¡œ ë‚˜ëˆˆ ëª«, colì€ 3ìœ¼ë¡œ ë‚˜ëˆˆ ë‚˜ë¨¸ì§€
         ###################  Fill Out  #######################
-
         # send message and check ACK
-        
+        AckCheckText=client_socket.recv(SIZE).decode()
+        if AckCheckText!=("ACK"):
+            print("ACKì´ ìˆ˜ì‹ ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.")
+            return False
+                    
         return True
         ######################################################  
+
+
 
     
     def check_result(self,winner,get=False):
@@ -301,22 +307,22 @@ class TTT(tk.Tk):
         '''
         # no skeleton
         ###################  Fill Out  #######################
-        result=False#ÃÊ±â°ª
+        result=False#ì´ˆê¸°ê°’
         if get==False: # if get is false, it means this user is winner and need to report the result first
             self.socket.send(bytes("winner is me","utf-8"))
             if "ACK winner is me"!=self.socket.recv(SIZE).decode():
                 self.quit()
-            #ACK ¹Ş°í³ª¼­ º¸µåÆÇ °°ÀºÁö º¸±â
+            #ACK ë°›ê³ ë‚˜ì„œ ë³´ë“œíŒ ê°™ì€ì§€ ë³´ê¸°
             if check_board():
                 result=True
         else: 
             rtext=self.socket.recv(SIZE).decode()
             self.socket.send(bytes("ACK winner is me","utf-8"))
-            #ACK º¸³»°í³ª¼­ º¸µåÆÇ °°ÀºÁö º¸±â
+            #ACK ë³´ë‚´ê³ ë‚˜ì„œ ë³´ë“œíŒ ê°™ì€ì§€ ë³´ê¸°
             if check_board():
                 result=True
         def check_board():
-            if get==False:#³»°¡À§³Ê
+            if get==False:#ë‚´ê°€ìœ„ë„ˆ
                 self.socket.send(bytes(str(self.board),"utf-8"))
                 if self.socket.recv(SIZE).decode()==str(self.board):
                     result=True
