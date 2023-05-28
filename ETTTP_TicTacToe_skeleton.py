@@ -255,7 +255,7 @@ class TTT(tk.Tk):
         '''
         Check if the selected location is already taken or not
         '''
-
+        
         '''
         Send message to peer
         '''
@@ -301,11 +301,31 @@ class TTT(tk.Tk):
         '''
         # no skeleton
         ###################  Fill Out  #######################
-
-        
-
-
-        return True
+        result=False#초기값
+        if get==False: # if get is false, it means this user is winner and need to report the result first
+            self.socket.send(bytes("winner is me","utf-8"))
+            if "ACK winner is me"!=self.socket.recv(SIZE).decode():
+                self.quit()
+            #ACK 받고나서 보드판 같은지 보기
+            if check_board():
+                result=True
+        else: 
+            rtext=self.socket.recv(SIZE).decode()
+            self.socket.send(bytes("ACK winner is me","utf-8"))
+            #ACK 보내고나서 보드판 같은지 보기
+            if check_board():
+                result=True
+        def check_board():
+            if get==False:#내가위너
+                self.socket.send(bytes(str(self.board),"utf-8"))
+                if self.socket.recv(SIZE).decode()==str(self.board):
+                    result=True
+            else:
+                rtext=self.socket.recv(SIZE).decode()
+                if rtext==str(self.board):
+                    result=True
+            return result
+        return result
         ######################################################  
 
         
