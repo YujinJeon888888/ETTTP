@@ -1,4 +1,4 @@
-﻿'''
+'''
   ETTTP_Client_skeleton.py
  
   34743-02 Information Communications
@@ -37,12 +37,12 @@ if __name__ == '__main__':
 
         if client_socket.recv(SIZE).decode()=="start is server":
             start=0
-            print("start = 0")
+            print("start is server")
             # Send ACK 
             client_socket.send(bytes("ACK start is server","utf-8"))
         else :
             start=1
-            print("start = 1")
+            print("start is client")
             # Send ACK 
             client_socket.send(bytes("ACK start is client","utf-8"))
         ###################################################################
