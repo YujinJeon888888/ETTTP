@@ -376,9 +376,10 @@ def check_msg(msg, recv_ip):
     Function that checks if received message is ETTTP format
     '''
     ###################  Fill Out  #######################
-    
-    
-
+    Ttext_list=msg.split("\r\n")
+    if (Ttext_list[0]!=("SEND ETTTP/1.0 "))or(Ttext_list[1]!="Host: "+str(recv_ip)):#ETTTP형식에 맞지 않으면
+            print("비정상 종료")
+            quit()
 
     return True
     ######################################################  

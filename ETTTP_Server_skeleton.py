@@ -48,6 +48,8 @@ if __name__ == '__main__':
                 print("비정상 종료")
                 client_socket.close()
                 break
+            else: 
+                print("ACK 정상 수신")
             
         else: #클라이언트 먼저 시작.
             client_socket.send(bytes("SEND ETTTP/1.0 \r\n"
@@ -61,6 +63,8 @@ if __name__ == '__main__':
                 print("비정상 종료")
                 client_socket.close()
                 break
+            else:
+                print("ACK 정상 수신")
         ###################################################################
         
         root = TTT(client=False,target_socket=client_socket, src_addr=MY_IP,dst_addr=client_addr[0])
