@@ -37,21 +37,29 @@ if __name__ == '__main__':
         ######################### Fill Out ################################
 
         if start==0:#서버 먼저 시작.
-            client_socket.send(bytes("start is server","utf-8"))
+            client_socket.send(bytes("SEND ETTTP/1.0 \r\n"
+            +"Host: "+MY_IP+"\r\n"
+            +"start is server" ,"utf-8"))
             print("start is server")
             # Receive ack - if ack is correct, start game
             stext=client_socket.recv(SIZE).decode()
-            if stext!=("ACK start is server"):
+            stext_list=stext.split("\r\n")
+            if (stext_list[0]!=("SEND ETTTP/1.0 "))or(stext_list[1]!="Host: "+str(client_addr[0])):#ETTTP형식에 맞지 않으면
                 print("비정상 종료")
+                client_socket.close()
                 break
             
         else: #클라이언트 먼저 시작.
-            client_socket.send(bytes("start is client","utf-8"))
+            client_socket.send(bytes("SEND ETTTP/1.0 \r\n"
+            +"Host: "+MY_IP+"\r\n"
+            +"start is client","utf-8"))
             print("start is client")
             # Receive ack - if ack is correct, start game
             stext=client_socket.recv(SIZE).decode()
-            if stext!=("ACK start is client"):
+            stext_list=stext.split("\r\n")
+            if (stext_list[0]!=("SEND ETTTP/1.0 "))or(stext_list[1]!="Host: "+str(client_addr[0])):#ETTTP형식에 맞지 않으면
                 print("비정상 종료")
+                client_socket.close()
                 break
         ###################################################################
         

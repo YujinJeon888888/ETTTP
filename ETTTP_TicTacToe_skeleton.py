@@ -301,22 +301,22 @@ class TTT(tk.Tk):
         '''
         # no skeleton
         ###################  Fill Out  #######################
-        result=False#ÃÊ±â°ª
+        result=False#ì´ˆê¸°ê°’
         if get==False: # if get is false, it means this user is winner and need to report the result first
             self.socket.send(bytes("winner is me","utf-8"))
             if "ACK winner is me"!=self.socket.recv(SIZE).decode():
                 self.quit()
-            #ACK ¹Ş°í³ª¼­ º¸µåÆÇ °°ÀºÁö º¸±â
+            #ACK ë°›ê³ ë‚˜ì„œ ë³´ë“œíŒì²´í¬
             if check_board():
                 result=True
         else: 
             rtext=self.socket.recv(SIZE).decode()
             self.socket.send(bytes("ACK winner is me","utf-8"))
-            #ACK º¸³»°í³ª¼­ º¸µåÆÇ °°ÀºÁö º¸±â
+            #ACK ë³´ë‚´ê³ ë‚˜ì„œ ë³´ë“œíŒ ì²´í¬
             if check_board():
                 result=True
         def check_board():
-            if get==False:#³»°¡À§³Ê
+            if get==False:#ìê¸°ê°€ ìœ„ë„ˆë©´
                 self.socket.send(bytes(str(self.board),"utf-8"))
                 if self.socket.recv(SIZE).decode()==str(self.board):
                     result=True
@@ -376,7 +376,7 @@ def check_msg(msg, recv_ip):
     Function that checks if received message is ETTTP format
     '''
     ###################  Fill Out  #######################
-
+    
     
 
 
