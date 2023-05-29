@@ -225,7 +225,7 @@ class TTT(tk.Tk):
         else:  # If message is valid - send ack, update board and change turn
             self.socket.send(bytes("ACK ETTTP/1.0 \r\n"
             +"Host: "+self.recv_ip+"\r\n"
-            +str(self.user_move),"utf-8""))
+            +str(self.user_move),"utf-8"))           
             #send ack
 
             loc = 5 # received next-move (예시로 loc = 5로 설정)
@@ -260,36 +260,51 @@ class TTT(tk.Tk):
         '''
         Check if the selected location is already taken or not
         '''
-        if self.board[self.user_move] != 0:
-            print("유효하지 않은 칸입니다.")
-            return        
+        #1. 메세지를 받는다. 
+        #2. 메세지를 분석해서 어느 칸을 선택했는지 본다. 
+        #3. 이미 선택한 칸이면 send message 못하고 돌려보내짐
+        #SEND\r\nETTTP/1.0\r\nHost:127.0.0.1\r\nNew-Move:(1,2)\r\n\r\n
+        start_index = d_msg.find("(")
+        end_index = d_msg.find(")")
+        location=d_msg[start_index + 1 : end_index]
+        if location[0]==0:
+            if location[2]==0:
+                user_move=0
+            if location[2]==1:
+                user_move=1
+            if location[2]==2:
+                user_move=2
+        elif location[1]==1:
+            if location[2]==0:
+                user_move=3
+            if location[2]==1:
+                user_move=4
+            if location[2]==2:
+                user_move=5
         else: 
-            '''
-            Send message to peer
-            '''
-            if self.my_turn:#내 턴이면 내가 ack를 기다리는 입장
-                self.socket.send(bytes("SEND\r\nETTTP/1.0 \r\n"
-                +"Host: "+self.send_ip+"\r\n"
-                +str(self.user_move)),"utf-8")                  
+            if location[2]==0:
+                user_move=6
+            if location[2]==1:
+                user_move=7
+            if location[2]==2:
+                user_move=8
+        #유효한 자리인지 확인
+        if self.board[user_move] != 0 :#0으로 초기화했는데 0이 아니라는 건 이미 차지된 자리라는 뜻
+            print("유효하지 않은 칸")
+            return
+        '''
+        Send message to peer
+        '''
+        self.socket.send(bytes(d_msg,"utf-8"))
+        '''
+        Get ack
+        '''
+        rcv_msg=self.socket.recv(SIZE).decode()
+        if check_msg(rcv_msg, self.recv_ip):
+            #Mark on tic-tac-toe board
+            #update_board에서 보드판 바뀌게 하기 위한 변수
+            loc = user_move # peer's move, from 0 to 8
 
-                #ACK가 ETTTP 맞는형식인지 확인
-                rcv_msg=self.socket.recv(SIZE).decode()
-                rcv_msg_list=rcv_msg.split("\r\n")
-                if check_msg(rcv_msg, self.recv_ip):                    
-                    #!!확인 이거맞나? 상대방의 loc를 넣는건데, 내 차례니까 내 move밖에없잖음. 그러니까 아래 한 줄은 없어야하는 코드 아님? 결론은 loc = int(rcv_msg_list[2]) 어따 넣어야 하는 코드인지
-                    loc = int(rcv_msg_list[3]) # peer's move, from 0 to 8
-
-            else: #내 차례 아니면
-                    #ETTTP형식 맞는지 확인
-                    rcv_msg=self.socket.recv(SIZE).decode()
-                    rcv_msg_list=rcv_msg.split("\r\n")
-                if check_msg(rcv_msg, self.recv_ip):
-                        #맞으면 에크보내기
-                        self.socket.send(bytes(
-                        "ACK\r\nETTTP/1.0 \r\n"
-                        +"Host: "+self.send_ip+"\r\n"+#내가 보내는 애니까
-                        "ACK "+rcv_msg_list[3],"utf-8"))#ACK 보내기
-                        loc = int(rcv_msg_list[3]) # peer's move, from 0 to 8
         ######################################################  
         
         #vvvvvvvvvvvvvvvvvvv  DO NOT CHANGE  vvvvvvvvvvvvvvvvvvv
@@ -375,13 +390,13 @@ class TTT(tk.Tk):
             if check_msg(rcv_msg, self.recv_ip):
                 #맞으면 보드판체크
                 if check_board():
-                    result=True
+                    result=True#초기값이 false임. 여기 안 넘어오면 false로 나갈 것임
             #이제 ACK 보내기       
             self.socket.send(bytes(
                 "ACK\r\nETTTP/1.0 \r\n"
                 +"Host: "+self.send_ip+"\r\n"+#내가 보내는 애니까
                 "winner is me","utf-8"))#ACK 보내기
-            
+          
         def check_board():
             board_result=False
             if get==False:#자기가 위너면
@@ -395,11 +410,11 @@ class TTT(tk.Tk):
                     rcv_msg_list=rcv_msg.split("\r\n")
                     if rcv_msg_list[3]==str(self.board):
                         board_result=True
-            else:
-                #ETTTP 형식인지 확인
+            else:#루저면
+                #ETTTP 형식인지 확인(sender가 보낸게)
                 rcv_msg=self.socket.recv(SIZE).decode()
                 if check_msg(rcv_msg, self.recv_ip):
-                    #보드판 맞는지 확인
+                    #보드판 맞는지도 확인
                     rcv_msg_list=rcv_msg.split("\r\n")
                     if rcv_msg_list[3]==str(self.board):
                         board_result=True
@@ -409,6 +424,8 @@ class TTT(tk.Tk):
                     +"Host: "+self.send_ip+"\r\n"+#내가 보내는 애니까
                     +rcv_msg_list[3],"utf-8"))#ACK 보내기         
             return board_result
+    
+        return result  #맞는지 아닌지 결과 리턴
         ######################################################  
 
         
