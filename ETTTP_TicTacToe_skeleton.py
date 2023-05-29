@@ -213,7 +213,7 @@ class TTT(tk.Tk):
         If is not, close socket and quit
         '''
         ###################  Fill Out  #######################
-       msg =  "message" # get message using socket
+        msg =  "message" # get message using socket
         
         msg_valid_check = False
          
