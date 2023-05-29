@@ -44,16 +44,16 @@ if __name__ == '__main__':
             start=0
             print("start is server")
             # Send ACK 
-            client_socket.send(bytes("SEND ETTTP/1.0 \r\n"
+            client_socket.send(bytes("ACK ETTTP/1.0 \r\n"
             +"Host: "+MY_IP+"\r\n"
-            +"ACK start is server","utf-8"))
+            +"start is server","utf-8"))
         else :
             start=1
             print("start is client")
             # Send ACK 
-            client_socket.send(bytes("SEND ETTTP/1.0 \r\n"
+            client_socket.send(bytes("ACK ETTTP/1.0 \r\n"
             +"Host: "+MY_IP+"\r\n"
-            +"ACK start is client","utf-8"))
+            +"start is client","utf-8"))
         ###################################################################
         
         # Start game

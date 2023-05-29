@@ -44,7 +44,7 @@ if __name__ == '__main__':
             # Receive ack - if ack is correct, start game
             stext=client_socket.recv(SIZE).decode()
             stext_list=stext.split("\r\n")
-            if (stext_list[0]!=("SEND ETTTP/1.0 "))or(stext_list[1]!="Host: "+str(client_addr[0])):#ETTTP형식에 맞지 않으면
+            if (stext_list[0]!=("ACK ETTTP/1.0 "))or(stext_list[1]!="Host: "+str(client_addr[0])):#ETTTP형식에 맞지 않으면
                 print("비정상 종료")
                 client_socket.close()
                 break
@@ -59,7 +59,7 @@ if __name__ == '__main__':
             # Receive ack - if ack is correct, start game
             stext=client_socket.recv(SIZE).decode()
             stext_list=stext.split("\r\n")
-            if (stext_list[0]!=("SEND ETTTP/1.0 "))or(stext_list[1]!="Host: "+str(client_addr[0])):#ETTTP형식에 맞지 않으면
+            if (stext_list[0]!=("ACK ETTTP/1.0 "))or(stext_list[1]!="Host: "+str(client_addr[0])):#ETTTP형식에 맞지 않으면
                 print("비정상 종료")
                 client_socket.close()
                 break
