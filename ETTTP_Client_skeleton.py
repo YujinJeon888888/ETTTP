@@ -34,17 +34,26 @@ if __name__ == '__main__':
         ###################################################################
         # Receive who will start first from the server
         ######################### Fill Out ################################
-
-        if client_socket.recv(SIZE).decode()=="start is server":
+        ctext=client_socket.recv(SIZE).decode()
+        ctext_list=ctext.split("\r\n")
+        if (ctext_list[0]!=("SEND ETTTP/1.0 "))or(ctext_list[1]!="Host: "+str(SERVER_IP)):#ETTTP형식에 맞지 않으면
+            print("비정상 종료")
+            client_socket.close()
+            exit()
+        if ctext_list[2]=="start is server":
             start=0
             print("start is server")
             # Send ACK 
-            client_socket.send(bytes("ACK start is server","utf-8"))
+            client_socket.send(bytes("ACK ETTTP/1.0 \r\n"
+            +"Host: "+MY_IP+"\r\n"
+            +"start is server","utf-8"))
         else :
             start=1
             print("start is client")
             # Send ACK 
-            client_socket.send(bytes("ACK start is client","utf-8"))
+            client_socket.send(bytes("ACK ETTTP/1.0 \r\n"
+            +"Host: "+MY_IP+"\r\n"
+            +"start is client","utf-8"))
         ###################################################################
         
         # Start game
