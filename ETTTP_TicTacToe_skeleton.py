@@ -13,6 +13,7 @@ import random
 import tkinter as tk
 from socket import *
 import _thread
+from unicodedata import decimal
 
 SIZE=1024
 
@@ -242,7 +243,6 @@ class TTT(tk.Tk):
         Function to send message to peer using input from the textbox
         Need to check if this turn is my turn or not
         '''
-
         if not self.my_turn:
             self.t_debug.delete(1.0,"end")
             return
@@ -255,17 +255,26 @@ class TTT(tk.Tk):
         '''
         Check if the selected location is already taken or not
         '''
-        
-        '''
-        Send message to peer
-        '''
-        
-        '''
-        Get ack
-        '''
-        
-        loc = 5 # peer's move, from 0 to 8
-
+        # When it is not my turn or the selected location is already taken, do nothing
+        if self.board[self.user_move] != 0 or not self.my_turn:
+            print("유효하지 않은 칸입니다.")
+            return        
+        else: 
+            '''
+            Send message to peer
+            '''
+            self.socket.send(bytes("SEND ETTTP/1.0 \r\n"
+            +"Host: "+self.send_ip+"\r\n"
+            +str(self.user_move)),"utf-8")                  
+            '''
+            Get ack #!! 확인: ack는 어디서 보내는지? 보내는 ack가 있어야 받는데 어디서 보내는거임 
+            ''' 
+            #ACK가 ETTTP 맞는형식인지 확인
+            rcv_msg=self.socket.recv(SIZE).decode()
+            rcv_msg_list=rcv_msg.split("\r\n")
+            if check_msg(rcv_msg, self.recv_ip):                    
+                #!!확인(ack를 받아야 그걸 peer's move로 넣는건데, ack를 어디서 보냄?)
+                loc = int(rcv_msg_list[2]) # peer's move, from 0 to 8
         ######################################################  
         
         #vvvvvvvvvvvvvvvvvvv  DO NOT CHANGE  vvvvvvvvvvvvvvvvvvv
@@ -303,29 +312,56 @@ class TTT(tk.Tk):
         ###################  Fill Out  #######################
         result=False#초기값
         if get==False: # if get is false, it means this user is winner and need to report the result first
-            self.socket.send(bytes("winner is me","utf-8"))
-            if "ACK winner is me"!=self.socket.recv(SIZE).decode():
-                self.quit()
-            #ACK 받고나서 보드판체크
-            if check_board():
-                result=True
+            self.socket.send(bytes(
+                "SEND ETTTP/1.0 \r\n"
+                +"Host: "+self.send_ip+"\r\n"+#내가 보내는 애니까
+                "winner is me","utf-8"))
+            #ACK가 ETTTP 맞는형식인지 확인
+            rcv_msg=self.socket.recv(SIZE).decode()
+            if check_msg(rcv_msg, self.recv_ip):
+                #보드판체크
+                if check_board():
+                    result=True            
         else: 
-            rtext=self.socket.recv(SIZE).decode()
-            self.socket.send(bytes("ACK winner is me","utf-8"))
-            #ACK 보내고나서 보드판 체크
-            if check_board():
-                result=True
+            rcv_msg=self.socket.recv(SIZE).decode()
+            #ETTTP형식 맞는지 확인
+            rcv_msg=self.socket.recv(SIZE).decode()
+            if check_msg(rcv_msg, self.recv_ip):
+                #맞으면 보드판체크
+                if check_board():
+                    result=True
+            #이제 ACK 보내기       
+            self.socket.send(bytes(
+                "SEND ETTTP/1.0 \r\n"
+                +"Host: "+self.send_ip+"\r\n"+#내가 보내는 애니까
+                "ACK winner is me","utf-8"))#ACK 보내기
+            
         def check_board():
             if get==False:#자기가 위너면
-                self.socket.send(bytes(str(self.board),"utf-8"))
-                if self.socket.recv(SIZE).decode()==str(self.board):
-                    result=True
+                self.socket.send(bytes("SEND ETTTP/1.0 \r\n"
+                +"Host: "+self.send_ip+"\r\n"
+                +str(self.board),"utf-8"))
+                #ACK가 ETTTP 맞는형식인지 확인
+                rcv_msg=self.socket.recv(SIZE).decode()
+                if check_msg(rcv_msg, self.recv_ip):
+                    #보드판 같은지도 확인
+                    rcv_msg_list=rcv_msg.split("\r\n")
+                    if rcv_msg_list[2]==str(self.board):
+                        result=True
             else:
-                rtext=self.socket.recv(SIZE).decode()
-                if rtext==str(self.board):
-                    result=True
+                #ETTTP 형식인지 확인
+                rcv_msg=self.socket.recv(SIZE).decode()
+                if check_msg(rcv_msg, self.recv_ip):
+                    #보드판 맞는지 확인
+                    rcv_msg_list=rcv_msg.split("\r\n")
+                    if rcv_msg_list[2]==str(self.board):
+                        result=True
+                    #ACK보내기
+                    self.socket.send(bytes(
+                    "SEND ETTTP/1.0 \r\n"
+                    +"Host: "+self.send_ip+"\r\n"+#내가 보내는 애니까
+                    "ACK "+rcv_msg_list[2],"utf-8"))#ACK 보내기         
             return result
-        return result
         ######################################################  
 
         
@@ -376,10 +412,12 @@ def check_msg(msg, recv_ip):
     Function that checks if received message is ETTTP format
     '''
     ###################  Fill Out  #######################
+    result=True
     Ttext_list=msg.split("\r\n")
     if (Ttext_list[0]!=("SEND ETTTP/1.0 "))or(Ttext_list[1]!="Host: "+str(recv_ip)):#ETTTP형식에 맞지 않으면
             print("비정상 종료")
+            result=False
             quit()
 
-    return True
+    return result
     ######################################################  
