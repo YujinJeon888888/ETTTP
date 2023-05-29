@@ -244,7 +244,7 @@ class TTT(tk.Tk):
         Function to send message to peer using input from the textbox
         Need to check if this turn is my turn or not
         '''
-        if not self.my_turn:
+        if not self.my_turn:#내 턴 아니면 돌려보냄
             self.t_debug.delete(1.0,"end")
             return
         # get message from the input box
@@ -259,7 +259,7 @@ class TTT(tk.Tk):
         if self.board[self.user_move] != 0:
             print("유효하지 않은 칸입니다.")
             return        
-        else: 
+        else: #유효한 칸이면 ( 이미 내 턴인 건 확실한 상황)
             '''
             Send message to peer
             '''
@@ -276,17 +276,17 @@ class TTT(tk.Tk):
                 if check_msg(rcv_msg, self.recv_ip):                    
                     #!!확인 이거맞나? 상대방의 loc를 넣는건데, 내 차례니까 내 move밖에없잖음. 그러니까 아래 한 줄은 없어야하는 코드 아님? 결론은 loc = int(rcv_msg_list[2]) 어따 넣어야 하는 코드인지
                     loc = int(rcv_msg_list[3]) # peer's move, from 0 to 8
-            else: #내 차례 아니면
-                #ETTTP형식 맞는지 확인
-                rcv_msg=self.socket.recv(SIZE).decode()
-                rcv_msg_lisg=rcv_msg.split("\r\n")
-                if check_msg(rcv_msg, self.recv_ip):
-                    #맞으면 에크보내기
-                    self.socket.send(bytes(
-                    "ACK\r\nETTTP/1.0 \r\n"
-                    +"Host: "+self.send_ip+"\r\n"+#내가 보내는 애니까
-                    "ACK "+rcv_msg_list[3],"utf-8"))#ACK 보내기
-                    loc = int(rcv_msg_list[3]) # peer's move, from 0 to 8
+            #else: #내 차례 아니면
+            #    #ETTTP형식 맞는지 확인
+            #    rcv_msg=self.socket.recv(SIZE).decode()
+            #    rcv_msg_lisg=rcv_msg.split("\r\n")
+            #    if check_msg(rcv_msg, self.recv_ip):
+            #        #맞으면 에크보내기
+            #        self.socket.send(bytes(
+            #        "ACK\r\nETTTP/1.0 \r\n"
+            #        +"Host: "+self.send_ip+"\r\n"+#내가 보내는 애니까
+            #        "ACK "+rcv_msg_list[3],"utf-8"))#ACK 보내기
+            #        loc = int(rcv_msg_list[3]) # peer's move, from 0 to 8
         ######################################################  
         
         #vvvvvvvvvvvvvvvvvvv  DO NOT CHANGE  vvvvvvvvvvvvvvvvvvv
