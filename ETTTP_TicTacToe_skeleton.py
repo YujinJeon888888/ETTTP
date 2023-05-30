@@ -320,12 +320,29 @@ class TTT(tk.Tk):
         selection indicates the selected button
         '''
         row,col = divmod(selection,3) #row는 3으로 나눈 몫, col은 3으로 나눈 나머지
+
         ###################  Fill Out  #######################
         # send message and check ACK
 
+        if self.board[selection] != 0:
+            print("유효하지 않은 칸입니다.")
+            return  False      
+        else:
+            self.socket.send(bytes("SEND ETTTP/1.0 \r\n"
+            +"Host: "+self.send_ip+"\r\n"    
+            +"New_Move : ("+str(row)+","+str(col)+")\r\n\r\n,""utf-8"))    
+            #ACK가 ETTTP 맞는형식인지 확인
+                             
+            rcv_ack_msg=self.socket.recv(SIZE).decode()
+            rcv_ack_msg_list=rcv_ack_msg.split("\r\n")
+            if check_msg(rcv_ack_msg, self.recv_ip):
+                             return True
+            else:
+                return False
         # send message and check ACK
+
         
-        return True
+
         ######################################################  
 
 
