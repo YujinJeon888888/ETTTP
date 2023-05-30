@@ -16,7 +16,9 @@ import _thread
 from unicodedata import decimal
 
 SIZE=1024
-
+#추가한 함수.
+def remove_substring(string, start, end):
+        return string[:start] + string[end+1:]
 class TTT(tk.Tk):
     def __init__(self, target_socket,src_addr,dst_addr, client=True):
         super().__init__()
@@ -442,6 +444,9 @@ def check_msg(msg, recv_ip):
     '''
     ###################  Fill Out  #######################
     #0. 메세지를 첫 띄어쓰기 나올 때 이후만 떼어씀
+    #변수초기화
+    start_index = 1
+    end_index = 1
     if len(msg) > 0:#메세지 비어있는 것 들어올 경우 예외처리
         if msg[0]=="A":#ACK
             start_index = msg.find("A")
@@ -452,11 +457,10 @@ def check_msg(msg, recv_ip):
     #1. 메세지를 띄어쓰기 후까지만 활용
     msg = remove_substring(msg, start_index, end_index)
     Ttext_list=msg.split("\r\n")
-    if (Ttext_list[1]!=("ETTTP/1.0 "))or(Ttext_list[2]!="Host: "+str(recv_ip)+" "):#ETTTP형식에 맞지 않으면
+    if (Ttext_list[0]!=("ETTTP/1.0 "))or(Ttext_list[1]!="Host: "+str(recv_ip)+" "):#ETTTP형식에 맞지 않으면
             print("비정상 종료")          
             quit()
     ######################################################  
-    def remove_substring(string, start, end):
-        return string[:start] + string[end+1:]
     return True
+    ######################################################  
     ######################################################  
