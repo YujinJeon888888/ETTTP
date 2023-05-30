@@ -49,7 +49,7 @@ if __name__ == '__main__':
             start_index = stext.find("A")
             end_index = stext.find(" ")
             #1. 메세지를 띄어쓰기 후까지만 활용
-            msg = remove_substring(stext, start_index, end_index)
+            stext = remove_substring(stext, start_index, end_index)
             stext_list=stext.split("\r\n")
             if (stext_list[0]!=("ETTTP/1.0 "))or(stext_list[1]!="Host: "+str(client_addr[0])+" "):#ETTTP형식에 맞지 않으면
                 print("비정상 종료")
