@@ -30,14 +30,20 @@ class TTT(tk.Tk):
         
         self.send_ip = dst_addr
         self.recv_ip = src_addr
+        
+        self.total_cells = 9
+        self.line_size = 3
+        
+        
         # Set variables for Client and Server UI
+        ############## updated ###########################
         if client:
             self.myID = 1   #0: server, 1: client
             self.title('34743-02-Tic-Tac-Toe Client')
             self.user = {'value': self.line_size+1, 'bg': 'blue',
-                     'win': 'Result: You Won!', 'text':'O','Name':"YOU"}
+                     'win': 'Result: You Won!', 'text':'O','Name':"ME"}
             self.computer = {'value': 1, 'bg': 'orange',
-                             'win': 'Result: You Lost!', 'text':'X','Name':"ME"}   
+                             'win': 'Result: You Lost!', 'text':'X','Name':"YOU"}   
         else:
             self.myID = 0
             self.title('34743-02-Tic-Tac-Toe Server')
@@ -45,6 +51,8 @@ class TTT(tk.Tk):
                          'win': 'Result: You Won!', 'text':'X','Name':"ME"}   
             self.computer = {'value': self.line_size+1, 'bg': 'blue',
                      'win': 'Result: You Lost!', 'text':'O','Name':"YOU"}
+        ##################################################
+
             
         self.board_bg = 'white'
         self.all_lines = ((0, 1, 2), (3, 4, 5), (6, 7, 8),
@@ -208,22 +216,26 @@ class TTT(tk.Tk):
         If is not, close socket and quit
         '''
         ###################  Fill Out  #######################
-        msg =  "message" # get message using socket
-        
-        msg_valid_check = False
-         
+        rcv_msg =  self.socket.recv(SIZE).decode() # get message using socket
+        rcv_msg_list=rcv_msg.split("\r\n")
+        msg_valid_check = check_msg(rcv_msg, self.recv_ip)
         
         if msg_valid_check: # Message is not valid
             self.socket.close()   
             self.quit()
             return
         else:  # If message is valid - send ack, update board and change turn
-            self.socket.send(bytes("ACK ETTTP/1.0 \r\n"
-            +"Host: "+self.recv_ip+"\r\n"
-            +str(self.user_move),"utf-8"))           
             #send ack
 
+            self.socket.send(bytes("ACK ETTTP/1.0 \r\n"+ "Host: "+self.recv_ip+"\r\n"
+            +rcv_msg_list[2],"utf-8"))
             loc = 5 # received next-move (예시로 loc = 5로 설정)
+            
+            row_col_list=rcv_msg_list[2].split(":")[1]
+            row=row_col_list[1]
+            col=row_col_list[3]
+            selection=row*3+col
+            loc = selection # received next-move (예시로 loc = 5로 설정)
             
             ######################################################   
             #update board and change turn
@@ -262,27 +274,12 @@ class TTT(tk.Tk):
         start_index = d_msg.find("(")
         end_index = d_msg.find(")")
         location=d_msg[start_index + 1 : end_index]
-        if location[0]==0:
-            if location[2]==0:
-                user_move=0
-            if location[2]==1:
-                user_move=1
-            if location[2]==2:
-                user_move=2
-        elif location[1]==1:
-            if location[2]==0:
-                user_move=3
-            if location[2]==1:
-                user_move=4
-            if location[2]==2:
-                user_move=5
-        else: 
-            if location[2]==0:
-                user_move=6
-            if location[2]==1:
-                user_move=7
-            if location[2]==2:
-                user_move=8
+        #행 인덱스 * 3
+        row=int(location[0])*3
+        #열 인덱스
+        col=int(location[2])
+        #둘이 더한 게 user_move
+        user_move=row+col
         #유효한 자리인지 확인
         if self.board[user_move] != 0 :#0으로 초기화했는데 0이 아니라는 건 이미 차지된 자리라는 뜻
             print("유효하지 않은 칸")
@@ -290,7 +287,7 @@ class TTT(tk.Tk):
         '''
         Send message to peer
         '''
-        self.socket.send(bytes(d_msg,"utf-8"))
+        self.socket.send(bytes(d_msg,"utf-8"))#디버그 창에 입력한 걸 보내야 하니까
         '''
         Get ack
         '''
@@ -322,38 +319,10 @@ class TTT(tk.Tk):
         row,col = divmod(selection,3) #row는 3으로 나눈 몫, col은 3으로 나눈 나머지
         ###################  Fill Out  #######################
         # send message and check ACK
-        if not self.my_turn:
-            rcv_msg=self.socket.recv(SIZE).decode()
-            rcv_msg_list=rcv_msg.split("\r\n")
-            if check_msg(rcv_msg, self.recv_ip):
-                        #if correct, send ack
-                        self.socket.send(bytes(
-                        "ACK\r\nETTTP/1.0 \r\n"
-                        +"Host: "+self.send_ip+"\r\n"+
-                        "ACK"+rcv_msg_list[3],"utf-8"))
-                        return
-            else :
-                print("ETTTP 형식이 아닙니다.")
-                return 
-                
 
-        elif self.board[self.user_move] != 0:
-            print("유효하지 않은 칸입니다.")
-            return  False      
-        else:
-                self.socket.send(bytes("SEND\r\nETTTP/1.0 \r\n"
-                +"Host: "+self.send_ip+"\r\n"
-                +str(self.user_move)),"utf-8")                  
-
-                #ACK가 ETTTP 맞는형식인지 확인
-                rcv_msg=self.socket.recv(SIZE).decode()
-                rcv_msg_list=rcv_msg.split("\r\n")
-                if check_msg(rcv_msg, self.recv_ip):
-                    return True
-                else:
-                    return False
-                  
-
+        # send message and check ACK
+        
+        return True
         ######################################################  
 
 
@@ -367,19 +336,19 @@ class TTT(tk.Tk):
         # no skeleton
         ###################  Fill Out  #######################
         result=False#초기값
-        if get==False: # if get is false, it means this user is winner and need to report the result first
+        if get==False: # if get is false, it means this user is winner and need to report the result "first"
             self.socket.send(bytes(
-                "SEND\r\nETTTP/1.0 \r\n"
-                +"Host: "+self.send_ip+"\r\n"+#내가 보내는 애니까
-                "winner is me","utf-8"))
+                "SEND ETTTP/1.0 \r\n"+#!! 교수님 ppt: SEND 대신 RESULT
+                "Host: "+self.send_ip+" \r\n"+
+                "Winner: ME \r\n\r\n","utf-8"))
             #ACK가 ETTTP 맞는형식인지 확인
             rcv_msg=self.socket.recv(SIZE).decode()
             if check_msg(rcv_msg, self.recv_ip):
                 #보드판체크
                 if check_board():
                     result=True            
-        else: 
-            rcv_msg=self.socket.recv(SIZE).decode()
+        else: #진 애 시점
+            #이긴애가 보낸거 받고
             #ETTTP형식 맞는지 확인
             rcv_msg=self.socket.recv(SIZE).decode()
             if check_msg(rcv_msg, self.recv_ip):
@@ -388,22 +357,22 @@ class TTT(tk.Tk):
                     result=True#초기값이 false임. 여기 안 넘어오면 false로 나갈 것임
             #이제 ACK 보내기       
             self.socket.send(bytes(
-                "ACK\r\nETTTP/1.0 \r\n"
-                +"Host: "+self.send_ip+"\r\n"+#내가 보내는 애니까
-                "winner is me","utf-8"))#ACK 보내기
+                "ACK ETTTP/1.0 \r\n"+
+                "Host: "+self.send_ip+" \r\n"+
+                "Winner: ME \r\n\r\n","utf-8"))#ACK 보내기
           
         def check_board():
             board_result=False
             if get==False:#자기가 위너면
-                self.socket.send(bytes("SEND\r\nETTTP/1.0 \r\n"
-                +"Host: "+self.send_ip+"\r\n"
+                self.socket.send(bytes("SEND ETTTP/1.0 \r\n"
+                +"Host: "+self.send_ip+" \r\n"
                 +str(self.board),"utf-8"))
                 #ACK가 ETTTP 맞는형식인지 확인
                 rcv_msg=self.socket.recv(SIZE).decode()
                 if check_msg(rcv_msg, self.recv_ip):
                     #보드판 같은지도 확인
                     rcv_msg_list=rcv_msg.split("\r\n")
-                    if rcv_msg_list[3]==str(self.board):
+                    if rcv_msg_list[2]==str(self.board):
                         board_result=True
             else:#루저면
                 #ETTTP 형식인지 확인(sender가 보낸게)
@@ -411,13 +380,13 @@ class TTT(tk.Tk):
                 if check_msg(rcv_msg, self.recv_ip):
                     #보드판 맞는지도 확인
                     rcv_msg_list=rcv_msg.split("\r\n")
-                    if rcv_msg_list[3]==str(self.board):
+                    if rcv_msg_list[2]==str(self.board):
                         board_result=True
                     #ACK보내기
                     self.socket.send(bytes(
-                    "ACK\r\nETTTP/1.0 \r\n"
-                    +"Host: "+self.send_ip+"\r\n"+#내가 보내는 애니까
-                    +rcv_msg_list[3],"utf-8"))#ACK 보내기         
+                    "ACK ETTTP/1.0 \r\n"
+                    +"Host: "+self.send_ip+" \r\n"+#내가 보내는 애니까
+                    +rcv_msg_list[2],"utf-8"))#ACK 보내기         
             return board_result
     
         return result  #맞는지 아닌지 결과 리턴
@@ -472,16 +441,17 @@ def check_msg(msg, recv_ip):
     '''
     ###################  Fill Out  #######################
     #0. 메세지를 첫 띄어쓰기 나올 때 이후만 떼어씀
-    if msg[0]=="A":
-        start_index = msg.find("A")
-        end_index = msg.find(" ")
-    elif msg[0]=="S":
-        start_index = msg.find("S")
-        end_index = msg.find(" ")
+    if len(msg) > 0:#메세지 비어있는 것 들어올 경우 예외처리
+        if msg[0]=="A":#ACK
+            start_index = msg.find("A")
+            end_index = msg.find(" ")
+        elif msg[0]=="S":#SEND
+            start_index = msg.find("S")
+            end_index = msg.find(" ")
     #1. 메세지를 띄어쓰기 후까지만 활용
     msg = remove_substring(msg, start_index, end_index)
     Ttext_list=msg.split("\r\n")
-    if (Ttext_list[1]!=("ETTTP/1.0 "))or(Ttext_list[2]!="Host: "+str(recv_ip)):#ETTTP형식에 맞지 않으면
+    if (Ttext_list[1]!=("ETTTP/1.0 "))or(Ttext_list[2]!="Host: "+str(recv_ip)+" "):#ETTTP형식에 맞지 않으면
             print("비정상 종료")          
             quit()
     ######################################################  
