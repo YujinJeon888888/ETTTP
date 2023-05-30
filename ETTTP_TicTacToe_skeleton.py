@@ -200,7 +200,7 @@ class TTT(tk.Tk):
             _thread.start_new_thread(self.get_move,())
         #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   def get_move(self):
+    def get_move(self):
         '''
         Function to get move from other peer
         Get message using socket, and check if it is valid
