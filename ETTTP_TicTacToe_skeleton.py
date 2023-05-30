@@ -205,7 +205,7 @@ class TTT(tk.Tk):
             _thread.start_new_thread(self.get_move,())
         #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    def get_move(self):
+   def get_move(self):
         '''
         Function to get move from other peer
         Get message using socket, and check if it is valid
@@ -213,22 +213,25 @@ class TTT(tk.Tk):
         If is not, close socket and quit
         '''
         ###################  Fill Out  #######################
-        msg =  "message" # get message using socket
-        
-        msg_valid_check = False
-         
+        rcv_msg =  self.socket.recv(SIZE).decode() # get message using socket
+        rcv_msg_list=rcv_msg.split("\r\n")
+        msg_valid_check = check_msg(rcv_msg,self.recv_ip)
         
         if msg_valid_check: # Message is not valid
             self.socket.close()   
             self.quit()
             return
         else:  # If message is valid - send ack, update board and change turn
-            self.socket.send(bytes("ACK ETTTP/1.0 \r\n"
-            +"Host: "+self.recv_ip+"\r\n"
-            +str(self.user_move),"utf-8"))           
             #send ack
 
-            loc = 5 # received next-move (예시로 loc = 5로 설정)
+            self.socket.send(bytes("ACK ETTTP/1.0 \r\n"+ "Host: "+self.recv_ip+"\r\n"
+            +rcv_msg_list[2],"utf-8"))
+            
+            row_col_list=rcv_msg_list[2].split(":")[1]
+            row=row_col_list[1]
+            col=row_col_list[3]
+            selection=row*3+col
+            loc = selection # received next-move (예시로 loc = 5로 설정)
             
             ######################################################   
             #update board and change turn
@@ -327,36 +330,22 @@ class TTT(tk.Tk):
         row,col = divmod(selection,3) #row는 3으로 나눈 몫, col은 3으로 나눈 나머지
         ###################  Fill Out  #######################
         # send message and check ACK
-        if not self.my_turn:
-            rcv_msg=self.socket.recv(SIZE).decode()
-            rcv_msg_list=rcv_msg.split("\r\n")
-            if check_msg(rcv_msg, self.recv_ip):
-                        #if correct, send ack
-                        self.socket.send(bytes(
-                        "ACK\r\nETTTP/1.0 \r\n"
-                        +"Host: "+self.send_ip+"\r\n"+
-                        "ACK"+rcv_msg_list[3],"utf-8"))
-                        return
-            else :
-                print("ETTTP 형식이 아닙니다.")
-                return 
-                
 
-        elif self.board[self.user_move] != 0:
+        if self.board[selection] != 0:
             print("유효하지 않은 칸입니다.")
             return  False      
         else:
-                self.socket.send(bytes("SEND\r\nETTTP/1.0 \r\n"
-                +"Host: "+self.send_ip+"\r\n"
-                +str(self.user_move)),"utf-8")                  
-
-                #ACK가 ETTTP 맞는형식인지 확인
-                rcv_msg=self.socket.recv(SIZE).decode()
-                rcv_msg_list=rcv_msg.split("\r\n")
-                if check_msg(rcv_msg, self.recv_ip):
-                    return True
-                else:
-                    return False
+            self.socket.send(bytes("SEND ETTTP/1.0 \r\n"
+            +"Host: "+self.send_ip+"\r\n"    
+            +"New_Move: ("+str(row)+","+str(col)+")\r\n\r\n","utf-8"))    
+            #ACK가 ETTTP 맞는형식인지 확인
+                             
+            rcv_ack_msg=self.socket.recv(SIZE).decode()
+            rcv_ack_msg_list=rcv_ack_msg.split("\r\n")
+            if check_msg(rcv_ack_msg, self.recv_ip):
+                             return True
+            else:
+                return False
                   
 
         ######################################################  
