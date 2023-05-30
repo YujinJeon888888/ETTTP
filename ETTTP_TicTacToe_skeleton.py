@@ -221,14 +221,13 @@ class TTT(tk.Tk):
         '''
         ###################  Fill Out  #######################
         rcv_msg =  self.socket.recv(SIZE).decode() # get message using socket
-        rcv_msg_list=rcv_msg.split("\r\n")
         check_msg(rcv_msg, self.recv_ip)#if Message is not valid-> quit() //check_msg함수에서 알아서
        
         # If message is valid - send ack, update board and change turn
         #send ack
+        rcv_msg_list=rcv_msg.split("\r\n")
         self.socket.send(bytes("ACK ETTTP/1.0 \r\n"+ "Host: "+self.recv_ip+" \r\n"
-        +rcv_msg_list[2],"utf-8"))
-                       
+        +rcv_msg_list[2],"utf-8"))                       
         #loc 정하는 코드
         start_index = rcv_msg.find("(")
         end_index = rcv_msg.find(")")
@@ -237,10 +236,10 @@ class TTT(tk.Tk):
         row=int(location[0])*3
         #열 인덱스
         col=int(location[3])
-        #둘이 더한 게 user_move
-           
-        loc = row+col # received next-move (예시로 loc = 5로 설정)
-            
+        #둘이 더한 게 loc
+        loc= row+col # received next-move (예시로 loc = 5로 설정)
+        
+        print("get move의 loc은 "+str(loc)+" 입니다.")    
         ######################################################   
         #update board and change turn
             
@@ -323,9 +322,10 @@ class TTT(tk.Tk):
         row,col = divmod(selection,3) #row는 3으로 나눈 몫, col은 3으로 나눈 나머지
         ###################  Fill Out  #######################
         # send message and check ACK
+        print("send move: ("+str(row)+", "+str(col)+")")
         self.socket.send(bytes("SEND ETTTP/1.0 \r\n"+
         "Host: "+self.send_ip+" \r\n"
-        +"New-Move: (1, 2) \r\n\r\n","utf-8"))
+        +"New-Move: ("+str(row)+", "+str(col)+") \r\n\r\n","utf-8"))
         #에크 받고
         rcv_msg=self.socket.recv(SIZE).decode()
         #ETTTP형식 맞는지
@@ -344,32 +344,7 @@ class TTT(tk.Tk):
         '''
         # no skeleton
         ###################  Fill Out  #######################
-        result=False#초기값
-        if get==False: # if get is false, it means this user is winner and need to report the result "first"
-            self.socket.send(bytes(
-                "SEND ETTTP/1.0 \r\n"+#!! 교수님 ppt: SEND 대신 RESULT
-                "Host: "+self.send_ip+" \r\n"+
-                "Winner: ME \r\n\r\n","utf-8"))
-            #ACK가 ETTTP 맞는형식인지 확인
-            rcv_msg=self.socket.recv(SIZE).decode()
-            if check_msg(rcv_msg, self.recv_ip):
-                #보드판체크
-                if check_board():
-                    result=True            
-        else: #진 애 시점
-            #이긴애가 보낸거 받고
-            #ETTTP형식 맞는지 확인
-            rcv_msg=self.socket.recv(SIZE).decode()
-            if check_msg(rcv_msg, self.recv_ip):
-                #맞으면 보드판체크
-                if check_board():
-                    result=True#초기값이 false임. 여기 안 넘어오면 false로 나갈 것임
-            #이제 ACK 보내기       
-            self.socket.send(bytes(
-                "ACK ETTTP/1.0 \r\n"+
-                "Host: "+self.send_ip+" \r\n"+
-                "Winner: ME \r\n\r\n","utf-8"))#ACK 보내기
-          
+        #내가 정의한 함수
         def check_board():
             board_result=False
             if get==False:#자기가 위너면
@@ -397,6 +372,34 @@ class TTT(tk.Tk):
                     +"Host: "+self.send_ip+" \r\n"+#내가 보내는 애니까
                     +rcv_msg_list[2],"utf-8"))#ACK 보내기         
             return board_result
+
+    
+        result=False#초기값
+        if get==False: # if get is false, it means this user is winner and need to report the result "first"
+            self.socket.send(bytes(
+                "SEND ETTTP/1.0 \r\n"+#!! 교수님 ppt: SEND 대신 RESULT
+                "Host: "+self.send_ip+" \r\n"+
+                "Winner: ME \r\n\r\n","utf-8"))
+            #ACK가 ETTTP 맞는형식인지 확인
+            rcv_msg=self.socket.recv(SIZE).decode()
+            if check_msg(rcv_msg, self.recv_ip):
+                #보드판체크
+                if check_board():
+                    result=True            
+        else: #진 애 시점
+            #이긴애가 보낸거 받고
+            #ETTTP형식 맞는지 확인
+            rcv_msg=self.socket.recv(SIZE).decode()
+            if check_msg(rcv_msg, self.recv_ip):
+                #맞으면 보드판체크
+                if check_board():
+                    result=True#초기값이 false임. 여기 안 넘어오면 false로 나갈 것임
+            #이제 ACK 보내기       
+            self.socket.send(bytes(
+                "ACK ETTTP/1.0 \r\n"+
+                "Host: "+self.send_ip+" \r\n"+
+                "Winner: ME \r\n\r\n","utf-8"))#ACK 보내기
+          
     
         return result  #맞는지 아닌지 결과 리턴
         ######################################################  
