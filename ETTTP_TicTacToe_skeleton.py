@@ -30,11 +30,6 @@ class TTT(tk.Tk):
         
         self.send_ip = dst_addr
         self.recv_ip = src_addr
-        
-        self.total_cells = 9
-        self.line_size = 3
-        
-        
         # Set variables for Client and Server UI
         if client:
             self.myID = 1   #0: server, 1: client
@@ -226,6 +221,7 @@ class TTT(tk.Tk):
 
             self.socket.send(bytes("ACK ETTTP/1.0 \r\n"+ "Host: "+self.recv_ip+"\r\n"
             +rcv_msg_list[2],"utf-8"))
+            loc = 5 # received next-move (예시로 loc = 5로 설정)
             
             row_col_list=rcv_msg_list[2].split(":")[1]
             row=row_col_list[1]
@@ -306,8 +302,8 @@ class TTT(tk.Tk):
         if check_msg(rcv_msg, self.recv_ip):
             #Mark on tic-tac-toe board
             #update_board에서 보드판 바뀌게 하기 위한 변수
-            loc = user_move # peer's move, from 0 to 8
-
+            loc = user_move # peer's move, from 0 to 8#둘 다 peer
+            #상대편에서는 get_move에서 업데이트
         ######################################################  
         
         #vvvvvvvvvvvvvvvvvvv  DO NOT CHANGE  vvvvvvvvvvvvvvvvvvv
@@ -331,23 +327,9 @@ class TTT(tk.Tk):
         ###################  Fill Out  #######################
         # send message and check ACK
 
-        if self.board[selection] != 0:
-            print("유효하지 않은 칸입니다.")
-            return  False      
-        else:
-            self.socket.send(bytes("SEND ETTTP/1.0 \r\n"
-            +"Host: "+self.send_ip+"\r\n"    
-            +"New_Move: ("+str(row)+","+str(col)+")\r\n\r\n","utf-8"))    
-            #ACK가 ETTTP 맞는형식인지 확인
-                             
-            rcv_ack_msg=self.socket.recv(SIZE).decode()
-            rcv_ack_msg_list=rcv_ack_msg.split("\r\n")
-            if check_msg(rcv_ack_msg, self.recv_ip):
-                             return True
-            else:
-                return False
-                  
-
+        # send message and check ACK
+        
+        return True
         ######################################################  
 
 
@@ -465,11 +447,21 @@ def check_msg(msg, recv_ip):
     Function that checks if received message is ETTTP format
     '''
     ###################  Fill Out  #######################
+    #0. 메세지를 첫 띄어쓰기 나올 때 이후만 떼어씀
+    if msg[0]=="A":
+        start_index = msg.find("A")
+        end_index = msg.find(" ")
+    elif msg[0]=="S":
+        start_index = msg.find("S")
+        end_index = msg.find(" ")
+    #1. 메세지를 띄어쓰기 후까지만 활용
+    msg = remove_substring(msg, start_index, end_index)
     Ttext_list=msg.split("\r\n")
     if (Ttext_list[1]!=("ETTTP/1.0 "))or(Ttext_list[2]!="Host: "+str(recv_ip)):#ETTTP형식에 맞지 않으면
             print("비정상 종료")          
             quit()
     ######################################################  
-
+    def remove_substring(string, start, end):
+        return string[:start] + string[end+1:]
     return True
     ######################################################  
