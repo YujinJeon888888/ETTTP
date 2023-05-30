@@ -471,11 +471,21 @@ def check_msg(msg, recv_ip):
     Function that checks if received message is ETTTP format
     '''
     ###################  Fill Out  #######################
+    #0. 메세지를 첫 띄어쓰기 나올 때 이후만 떼어씀
+    if msg[0]=="A":
+        start_index = msg.find("A")
+        end_index = msg.find(" ")
+    elif msg[0]=="S":
+        start_index = msg.find("S")
+        end_index = msg.find(" ")
+    #1. 메세지를 띄어쓰기 후까지만 활용
+    msg = remove_substring(msg, start_index, end_index)
     Ttext_list=msg.split("\r\n")
     if (Ttext_list[1]!=("ETTTP/1.0 "))or(Ttext_list[2]!="Host: "+str(recv_ip)):#ETTTP형식에 맞지 않으면
             print("비정상 종료")          
             quit()
     ######################################################  
-
+    def remove_substring(string, start, end):
+        return string[:start] + string[end+1:]
     return True
     ######################################################  
