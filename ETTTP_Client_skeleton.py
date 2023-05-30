@@ -52,14 +52,14 @@ if __name__ == '__main__':
             print("start is server")
             # Send ACK 
             client_socket.send(bytes("ACK ETTTP/1.0 \r\n"
-            +"Host: "+MY_IP+" \r\n"
+            +"Host: "+SERVER_IP+" \r\n"#메세지를 받았다는 에크니까, 주소를 보낸이로 해야함. 보낼 때 자기주소 동봉했으니까
             +"First-Move: ME \r\n\r\n" ,"utf-8"))
         else :
             start=1
             print("start is client")
             # Send ACK 
             client_socket.send(bytes("ACK ETTTP/1.0 \r\n"
-            +"Host: "+MY_IP+" \r\n"
+            +"Host: "+SERVER_IP+" \r\n"
             +"First-Move: YOU \r\n\r\n" ,"utf-8"))
         ###################################################################
         
