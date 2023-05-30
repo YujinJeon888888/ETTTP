@@ -30,11 +30,6 @@ class TTT(tk.Tk):
         
         self.send_ip = dst_addr
         self.recv_ip = src_addr
-        
-        self.total_cells = 9
-        self.line_size = 3
-        
-        
         # Set variables for Client and Server UI
         if client:
             self.myID = 1   #0: server, 1: client
@@ -303,8 +298,8 @@ class TTT(tk.Tk):
         if check_msg(rcv_msg, self.recv_ip):
             #Mark on tic-tac-toe board
             #update_board에서 보드판 바뀌게 하기 위한 변수
-            loc = user_move # peer's move, from 0 to 8
-
+            loc = user_move # peer's move, from 0 to 8#둘 다 peer
+            #상대편에서는 get_move에서 업데이트
         ######################################################  
         
         #vvvvvvvvvvvvvvvvvvv  DO NOT CHANGE  vvvvvvvvvvvvvvvvvvv
