@@ -229,11 +229,12 @@ class TTT(tk.Tk):
 
             self.socket.send(bytes("ACK ETTTP/1.0 \r\n"+ "Host: "+self.recv_ip+"\r\n"
             +rcv_msg_list[2],"utf-8"))
-            loc = 5 # received next-move (예시로 loc = 5로 설정)
             
             row_col_list=rcv_msg_list[2].split(":")[1]
-            row=row_col_list[1]
-            col=row_col_list[3]
+            row_col_list=list(row_col)
+            row=row_col_list[2]
+            col=row_col_list[4]
+
             selection=row*3+col
             loc = selection # received next-move (예시로 loc = 5로 설정)
             
