@@ -27,6 +27,8 @@ if __name__ == '__main__':
     server_socket.listen()
     MY_IP = '127.0.0.1'
     print("서버 대기중")
+    def remove_substring(string, start, end):
+        return string[:start] + string[end+1:]
     while True:
         client_socket, client_addr = server_socket.accept()
         
@@ -38,13 +40,18 @@ if __name__ == '__main__':
 
         if start==0:#서버 먼저 시작.
             client_socket.send(bytes("SEND ETTTP/1.0 \r\n"
-            +"Host: "+MY_IP+"\r\n"
-            +"start is server" ,"utf-8"))
+            +"Host: "+MY_IP+" \r\n"
+            +"First-Move: ME \r\n\r\n" ,"utf-8"))
             print("start is server")
             # Receive ack - if ack is correct, start game
             stext=client_socket.recv(SIZE).decode()
+            #0. 메세지를 첫 띄어쓰기 나올 때 이후만 떼어씀
+            start_index = stext.find("A")
+            end_index = stext.find(" ")
+            #1. 메세지를 띄어쓰기 후까지만 활용
+            msg = remove_substring(stext, start_index, end_index)
             stext_list=stext.split("\r\n")
-            if (stext_list[0]!=("ACK ETTTP/1.0 "))or(stext_list[1]!="Host: "+str(client_addr[0])):#ETTTP형식에 맞지 않으면
+            if (stext_list[0]!=("ETTTP/1.0 "))or(stext_list[1]!="Host: "+str(client_addr[0])+" "):#ETTTP형식에 맞지 않으면
                 print("비정상 종료")
                 client_socket.close()
                 break
@@ -53,24 +60,24 @@ if __name__ == '__main__':
             
         else: #클라이언트 먼저 시작.
             client_socket.send(bytes("SEND ETTTP/1.0 \r\n"
-            +"Host: "+MY_IP+"\r\n"
-            +"start is client","utf-8"))
+            +"Host: "+MY_IP+" \r\n"
+            +"First-Move: YOU \r\n\r\n" ,"utf-8"))
             print("start is client")
             # Receive ack - if ack is correct, start game
             stext=client_socket.recv(SIZE).decode()
+            #0. 메세지를 첫 띄어쓰기 나올 때 이후만 떼어씀
+            start_index = stext.find("A")
+            end_index = stext.find(" ")
+            #1. 메세지를 띄어쓰기 후까지만 활용
+            stext = remove_substring(stext, start_index, end_index)
             stext_list=stext.split("\r\n")
-            if (stext_list[0]!=("ACK ETTTP/1.0 "))or(stext_list[1]!="Host: "+str(client_addr[0])):#ETTTP형식에 맞지 않으면
+            if (stext_list[0]!=("ETTTP/1.0 "))or(stext_list[1]!="Host: "+str(client_addr[0])+" "):#ETTTP형식에 맞지 않으면
                 print("비정상 종료")
                 client_socket.close()
                 break
             else:
                 print("ACK 정상 수신")
         ###################################################################
-        
-                client_socket.close()
-        
-                break
-                server_socket.close()
 
                 
         root = TTT(client=False,target_socket=client_socket, src_addr=MY_IP,dst_addr=client_addr[0])
@@ -79,7 +86,7 @@ if __name__ == '__main__':
         client_socket.close()
         
         break
-        server_socket.close()
+    server_socket.close()
 
               
         ###################################################################
