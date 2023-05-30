@@ -17,6 +17,10 @@ from unicodedata import decimal
 
 SIZE=1024
 
+#추가한 함수.
+def remove_substring(string, start, end):
+        return string[:start] + string[end+1:]
+
 class TTT(tk.Tk):
     def __init__(self, target_socket,src_addr,dst_addr, client=True):
         super().__init__()
@@ -218,35 +222,35 @@ class TTT(tk.Tk):
         ###################  Fill Out  #######################
         rcv_msg =  self.socket.recv(SIZE).decode() # get message using socket
         rcv_msg_list=rcv_msg.split("\r\n")
-        msg_valid_check = check_msg(rcv_msg, self.recv_ip)
-        
-        if msg_valid_check: # Message is not valid
-            self.socket.close()   
-            self.quit()
-            return
-        else:  # If message is valid - send ack, update board and change turn
-            #send ack
-
-            self.socket.send(bytes("ACK ETTTP/1.0 \r\n"+ "Host: "+self.recv_ip+"\r\n"
-            +rcv_msg_list[2],"utf-8"))
-            loc = 5 # received next-move (예시로 loc = 5로 설정)
+        check_msg(rcv_msg, self.recv_ip)#if Message is not valid-> quit() //check_msg함수에서 알아서
+       
+        # If message is valid - send ack, update board and change turn
+        #send ack
+        self.socket.send(bytes("ACK ETTTP/1.0 \r\n"+ "Host: "+self.recv_ip+" \r\n"
+        +rcv_msg_list[2],"utf-8"))
+                       
+        #loc 정하는 코드
+        start_index = rcv_msg.find("(")
+        end_index = rcv_msg.find(")")
+        location=rcv_msg[start_index + 1 : end_index]
+        #행 인덱스 * 3
+        row=int(location[0])*3
+        #열 인덱스
+        col=int(location[3])
+        #둘이 더한 게 user_move
+           
+        loc = row+col # received next-move (예시로 loc = 5로 설정)
             
-            row_col_list=rcv_msg_list[2].split(":")[1]
-            row=row_col_list[1]
-            col=row_col_list[3]
-            selection=row*3+col
-            loc = selection # received next-move (예시로 loc = 5로 설정)
+        ######################################################   
+        #update board and change turn
             
-            ######################################################   
-            #update board and change turn
-            
-            #vvvvvvvvvvvvvvvvvvv  DO NOT CHANGE  vvvvvvvvvvvvvvvvvvv
-            self.update_board(self.computer, loc, get=True)
-            if self.state == self.active:  
-                self.my_turn = 1
-                self.l_status_bullet.config(fg='green')
-                self.l_status ['text'] = ['Ready']
-            #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        #vvvvvvvvvvvvvvvvvvv  DO NOT CHANGE  vvvvvvvvvvvvvvvvvvv
+        self.update_board(self.computer, loc, get=True)
+        if self.state == self.active:  
+            self.my_turn = 1
+            self.l_status_bullet.config(fg='green')
+            self.l_status ['text'] = ['Ready']
+        #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                 
 
     def send_debug(self):
@@ -270,14 +274,14 @@ class TTT(tk.Tk):
         #1. 메세지를 받는다. 
         #2. 메세지를 분석해서 어느 칸을 선택했는지 본다. 
         #3. 이미 선택한 칸이면 send message 못하고 돌려보내짐
-        #SEND\r\nETTTP/1.0\r\nHost:127.0.0.1\r\nNew-Move:(1,2)\r\n\r\n
+        #SEND ETTTP/1.0 \r\nHost: 192.168.0.2 \r\nNew-Move: (1, 2) \r\n\r\n
         start_index = d_msg.find("(")
         end_index = d_msg.find(")")
         location=d_msg[start_index + 1 : end_index]
         #행 인덱스 * 3
         row=int(location[0])*3
         #열 인덱스
-        col=int(location[2])
+        col=int(location[3])
         #둘이 더한 게 user_move
         user_move=row+col
         #유효한 자리인지 확인
@@ -319,9 +323,14 @@ class TTT(tk.Tk):
         row,col = divmod(selection,3) #row는 3으로 나눈 몫, col은 3으로 나눈 나머지
         ###################  Fill Out  #######################
         # send message and check ACK
+        self.socket.send(bytes("SEND ETTTP/1.0 \r\n"+
+        "Host: "+self.send_ip+" \r\n"
+        +"New-Move: (1, 2) \r\n\r\n","utf-8"))
+        #에크 받고
+        rcv_msg=self.socket.recv(SIZE).decode()
+        #ETTTP형식 맞는지
+        check_msg(rcv_msg,self.recv_ip)
 
-        # send message and check ACK
-        
         return True
         ######################################################  
 
@@ -435,12 +444,17 @@ class TTT(tk.Tk):
 
 # End of Root class
 
+
+
 def check_msg(msg, recv_ip):
     '''
     Function that checks if received message is ETTTP format
     '''
     ###################  Fill Out  #######################
     #0. 메세지를 첫 띄어쓰기 나올 때 이후만 떼어씀
+    #변수초기화
+    start_index = 1
+    end_index = 1
     if len(msg) > 0:#메세지 비어있는 것 들어올 경우 예외처리
         if msg[0]=="A":#ACK
             start_index = msg.find("A")
@@ -451,11 +465,10 @@ def check_msg(msg, recv_ip):
     #1. 메세지를 띄어쓰기 후까지만 활용
     msg = remove_substring(msg, start_index, end_index)
     Ttext_list=msg.split("\r\n")
-    if (Ttext_list[1]!=("ETTTP/1.0 "))or(Ttext_list[2]!="Host: "+str(recv_ip)+" "):#ETTTP형식에 맞지 않으면
+    if (Ttext_list[0]!=("ETTTP/1.0 "))or(Ttext_list[1]!="Host: "+str(recv_ip)+" "):#ETTTP형식에 맞지 않으면
             print("비정상 종료")          
             quit()
     ######################################################  
-    def remove_substring(string, start, end):
-        return string[:start] + string[end+1:]
     return True
     ######################################################  
+
