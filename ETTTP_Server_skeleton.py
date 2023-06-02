@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
         if start==0:#서버 먼저 시작.
             client_socket.send(bytes("SEND ETTTP/1.0 \r\n"
-            +"Host: "+MY_IP+" \r\n"
+            +"Host: "+client_addr[0]+" \r\n"#상대방 주소가 host임.
             +"First-Move: ME \r\n\r\n" ,"utf-8"))
             print("start is server")
             # Receive ack - if ack is correct, start game
@@ -51,7 +51,7 @@ if __name__ == '__main__':
             #1. 메세지를 띄어쓰기 후까지만 활용
             stext = remove_substring(stext, start_index, end_index)
             stext_list=stext.split("\r\n")
-            if (stext_list[0]!=("ETTTP/1.0 "))or(stext_list[1]!="Host: "+str(client_addr[0])+" "):#ETTTP형식에 맞지 않으면
+            if (stext_list[0]!=("ETTTP/1.0 "))or(stext_list[1]!="Host: "+MY_IP+" "):#ETTTP형식에 맞지 않으면. 까봐서 나한테 온 건지 확인해야하니까 MY_IP
                 print("비정상 종료")
                 client_socket.close()
                 break
@@ -60,7 +60,7 @@ if __name__ == '__main__':
             
         else: #클라이언트 먼저 시작.
             client_socket.send(bytes("SEND ETTTP/1.0 \r\n"
-            +"Host: "+MY_IP+" \r\n"
+            +"Host: "+client_addr[0]+" \r\n"
             +"First-Move: YOU \r\n\r\n" ,"utf-8"))
             print("start is client")
             # Receive ack - if ack is correct, start game
@@ -71,7 +71,7 @@ if __name__ == '__main__':
             #1. 메세지를 띄어쓰기 후까지만 활용
             stext = remove_substring(stext, start_index, end_index)
             stext_list=stext.split("\r\n")
-            if (stext_list[0]!=("ETTTP/1.0 "))or(stext_list[1]!="Host: "+str(client_addr[0])+" "):#ETTTP형식에 맞지 않으면
+            if (stext_list[0]!=("ETTTP/1.0 "))or(stext_list[1]!="Host: "+MY_IP+" "):#ETTTP형식에 맞지 않으면
                 print("비정상 종료")
                 client_socket.close()
                 break

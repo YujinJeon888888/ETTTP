@@ -43,7 +43,7 @@ if __name__ == '__main__':
         #1. 메세지를 띄어쓰기 후까지만 활용
         ctext = remove_substring(ctext, start_index, end_index)
         ctext_list=ctext.split("\r\n")
-        if (ctext_list[0]!=("ETTTP/1.0 "))or(ctext_list[1]!="Host: "+str(SERVER_IP)+" "):#ETTTP형식에 맞지 않으면
+        if (ctext_list[0]!=("ETTTP/1.0 "))or(ctext_list[1]!="Host: "+MY_IP+" "):#ETTTP형식에 맞지 않으면. 나한테 온 건지 까봐야 함.
             print("비정상 종료")
             client_socket.close()
             exit()
@@ -52,14 +52,14 @@ if __name__ == '__main__':
             print("start is server")
             # Send ACK 
             client_socket.send(bytes("ACK ETTTP/1.0 \r\n"
-            +"Host: "+MY_IP+" \r\n"
+            +"Host: "+SERVER_IP+" \r\n"
             +"First-Move: ME \r\n\r\n" ,"utf-8"))
         else :
             start=1
             print("start is client")
             # Send ACK 
             client_socket.send(bytes("ACK ETTTP/1.0 \r\n"
-            +"Host: "+MY_IP+" \r\n"
+            +"Host: "+SERVER_IP+" \r\n"
             +"First-Move: YOU \r\n\r\n" ,"utf-8"))
         ###################################################################
         
