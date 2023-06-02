@@ -348,7 +348,6 @@ class TTT(tk.Tk):
         rcv_msg=self.socket.recv(SIZE).decode()
         #ETTTP형식 맞는지
         ETTTP_result=True if (check_msg(rcv_msg,self.recv_ip) == True) else  False
-        print("ETTTP result: "+str(ETTTP_result))
         #result따라 quit여부 결정
         if not ETTTP_result:
             self.quit()
