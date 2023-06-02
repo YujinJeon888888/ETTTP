@@ -39,10 +39,10 @@ if __name__ == '__main__':
         ######################### Fill Out ################################
         ctext=client_socket.recv(SIZE).decode()
         #server가 보낸 message를 받아서 ctext에 넣음.
-        #0. ETTTP message에서, SEND/ACK string 이후의 string만 추출하기 위해 index를 확인. 
+        #0. ETTTP message에서, SEND string 이후의 string만 추출하기 위해 index를 확인. 
         start_index = ctext.find("S")
         end_index = ctext.find(" ")
-        #1. SEND/ACK string 이후의 string만 활용
+        #1. SEND string 이후의 string만 활용
         ctext = remove_substring(ctext, start_index, end_index)
         ctext_list=ctext.split("\r\n")
         if (ctext_list[0]!=("ETTTP/1.0"))or(ctext_list[1]!="Host:"+MY_IP):
