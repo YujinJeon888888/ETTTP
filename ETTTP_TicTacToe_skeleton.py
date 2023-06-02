@@ -276,7 +276,6 @@ class TTT(tk.Tk):
         #1. 메세지를 받는다. 
         #2. 메세지를 분석해서 어느 칸을 선택했는지 본다. 
         #3. 이미 선택한 칸이면 send message 못하고 돌려보내짐
-        #SEND ETTTP/1.0 \r\nHost: 192.168.0.2 \r\nNew-Move: (1, 2) \r\n\r\n
         debugMsg=d_msg.replace("\r\n","\\r\\n")
         print("디버그 창에서",end=" ")
         print(debugMsg+"라는 메시지를 받았어요")
@@ -366,12 +365,11 @@ class TTT(tk.Tk):
         '''
         # no skeleton
         ###################  Fill Out  #######################
-        #내가 정의한 함수
     
         result=False#초기값
         if get==False: # if get is false, it means this user is winner and need to report the result "first"
             self.socket.send(bytes(
-                "RESULT ETTTP/1.0\r\n"+#!! 교수님 ppt: SEND 대신 RESULT
+                "RESULT ETTTP/1.0\r\n"+
                 "Host:"+self.send_ip+"\r\n"+
                 "Winner:ME\r\n\r\n","utf-8"))
             #상대방이 겜 결과 보낸게 ETTTP 맞는형식인지 확인
@@ -400,10 +398,10 @@ class TTT(tk.Tk):
             if not ETTTP_result:
                 self.quit()
             else:
-                #Winner:ME이면 false. 나랑 결과가 겹치면 안되니까
+                #Winner:ME이면 True. 나랑 결과가 겹치면 안되니까
                 if(rcv_msg_list[2]=="Winner:ME"):
                     result=True        
-                #Winner:YOU이면 true
+                #Winner:YOU이면 False
                 if(rcv_msg_list[2]=="Winner:YOU"):
                     result=False  
                 #이제 내 결과도 보내기       
