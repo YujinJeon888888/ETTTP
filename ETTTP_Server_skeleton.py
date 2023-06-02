@@ -33,15 +33,18 @@ if __name__ == '__main__':
             return string[:start] + string[end+1:]
         client_socket, client_addr = server_socket.accept()
         print("클라이언트의 주소는 "+str(client_addr)+"입니다. ")
-        start = random.randrange(0,2)# select random to start
+        start = random.randrange(0,2)
+        # select random to start
         
         ###################################################################
         # Send start move information to peer
         ######################### Fill Out ################################
         
-        if start==0:#서버 먼저 시작.
+        if start==0:
+          #서버 먼저 시작.
+          #client에게 server가 시작한다는 message를 전송.
             client_socket.send(bytes("SEND ETTTP/1.0\r\n"
-            +"Host:"+client_addr[0]+"\r\n"#상대방 주소가 host임.
+            +"Host:"+client_addr[0]+"\r\n"
             +"First-Move: ME\r\n\r\n" ,"utf-8"))
             print("start is server")
             # Receive ack - if ack is correct, start game
