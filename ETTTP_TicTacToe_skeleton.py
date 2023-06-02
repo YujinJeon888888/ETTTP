@@ -221,16 +221,18 @@ class TTT(tk.Tk):
         '''
         ###################  Fill Out  #######################
         rcv_msg =  self.socket.recv(SIZE).decode() # get message using socket
-        #ETTTP형식 맞는지
+        #ETTTP 형식 맞는지 확인
         ETTTP_result=True if (check_msg(rcv_msg,self.recv_ip) == True) else  False
-        #result따라 quit여부 결정
+        #ETTTP_result 따라 quit여부 결정
+        #if ETTTP_result is false - 프로그램 종료.
         if not ETTTP_result:
             self.quit()       
         # If message is valid - send ack, update board and change turn
         #send ack
         rcv_msg_list=rcv_msg.split("\r\n")
         self.socket.send(bytes("ACK ETTTP/1.0\r\n"+ "Host:"+self.send_ip+"\r\n"
-        +rcv_msg_list[2],"utf-8"))                       
+        +rcv_msg_list[2],"utf-8"))
+        #rcv_msg_list[2] : New-Move:(a,b) 형태의, 선택한 블록의 위치.
         #loc 정하는 코드
         start_index = rcv_msg.find("(")
         end_index = rcv_msg.find(")")
@@ -273,9 +275,10 @@ class TTT(tk.Tk):
         '''
         Check if the selected location is already taken or not
         '''
-        #1. 메세지를 받는다. 
-        #2. 메세지를 분석해서 어느 칸을 선택했는지 본다. 
-        #3. 이미 선택한 칸이면 send message 못하고 돌려보내짐
+        #1. message를 받는다. 
+        #2. message를 분석해서 어느 칸을 선택했는지 본다. 
+        #3. 이미 선택한 칸이면 send message 못하고 돌려보내진다.
+        
         debugMsg=d_msg.replace("\r\n","\\r\\n")
         print("디버그 창에서",end=" ")
         print(debugMsg+"라는 메시지를 받았어요")
@@ -290,31 +293,33 @@ class TTT(tk.Tk):
         col=int(location[2])
         #둘이 더한 게 user_move
         user_move=row+col
+        
         print("내가 선택한 칸은 ("+str(location[0])+", "+str(location[2])+") 입니다.")
 
-        #유효한 자리인지 확인
-        if self.board[user_move] != 0 :#0으로 초기화했는데 0이 아니라는 건 이미 차지된 자리라는 뜻
+        #유효한 자리인지 확인한다.
+        if self.board[user_move] != 0 : # 0으로 초기화했는데 0이 아니라는 건 이미 차지된 자리라는 뜻
             print("유효하지 않은 칸")
             return
+        #유효한 자리인지 확인 했으면 peer에게 message를 보낸다.
         '''
         Send message to peer
         '''
-        self.socket.send(bytes(d_msg,"utf-8"))#디버그 창에 입력한 걸 보내야 하니까
+        self.socket.send(bytes(d_msg,"utf-8")) # 디버그 창에 입력한 ETTTP 형식의 message를 그대로 보낸다.
         print("소켓을 통해 peer에게 debug message를 보냈어요")
         '''
         Get ack
         '''
         rcv_msg=self.socket.recv(SIZE).decode()
-        #ETTTP형식 맞는지
+        #ETTTP형식 맞는지 확인.
         ETTTP_result=True if (check_msg(rcv_msg,self.recv_ip) == True) else  False
-        #result따라 quit여부 결정
+        #result 따라 quit여부 결정한다.
         if not ETTTP_result:
             self.quit()
         else:
             #Mark on tic-tac-toe board
             print("peer로부터 ACK를 받았어요")
             #update_board에서 보드판 바뀌게 하기 위한 변수
-            loc = user_move # peer's move, from 0 to 8#둘 다 peer
+            loc = user_move # peer's move, from 0 to 8
             #상대편에서는 get_move에서 업데이트
             
         ######################################################  
@@ -339,15 +344,16 @@ class TTT(tk.Tk):
         row,col = divmod(selection,3) #row는 3으로 나눈 몫, col은 3으로 나눈 나머지
         ###################  Fill Out  #######################
         # send message and check ACK
+        #블록을 선택하면 message를 보낸다. 이미 차지된 칸인지 아닌지는 my_move에서 확인. 
         print("내가 선택한 칸은 ("+str(row)+", "+str(col)+") 입니다.")
         self.socket.send(bytes("SEND ETTTP/1.0\r\n"+
         "Host:"+self.send_ip+"\r\n"
         +"New-Move:("+str(row)+","+str(col)+")\r\n\r\n","utf-8"))
-        #에크 받고
+        #ACK 받고
         rcv_msg=self.socket.recv(SIZE).decode()
-        #ETTTP형식 맞는지
+        #ETTTP형식 맞는지 확인
         ETTTP_result=True if (check_msg(rcv_msg,self.recv_ip) == True) else  False
-        #result따라 quit여부 결정
+        #result 따라 quit여부 결정한다.
         if not ETTTP_result:
             self.quit()
         else:
@@ -367,49 +373,48 @@ class TTT(tk.Tk):
         ###################  Fill Out  #######################
     
         result=False#초기값
-        if get==False: # if get is false, it means this user is winner and need to report the result "first"
+        if get==False: # if get is false, it means this user is winner and need to report the result "first" #이긴 사람 시점
+          #게임 결과를 먼저 전송.
             self.socket.send(bytes(
                 "RESULT ETTTP/1.0\r\n"+
                 "Host:"+self.send_ip+"\r\n"+
                 "Winner:ME\r\n\r\n","utf-8"))
-            #상대방이 겜 결과 보낸게 ETTTP 맞는형식인지 확인
+            #상대방이 게임 결과 보낸게 ETTTP 맞는형식인지 확인.
             rcv_msg=self.socket.recv(SIZE).decode()         
             rcv_msg_list=rcv_msg.split("\r\n")
-            #ETTTP형식 맞는지
+            #ETTTP형식 맞는지 확인
             ETTTP_result=True if (check_msg(rcv_msg,self.recv_ip) == True) else  False
-            #result따라 quit여부 결정
+            #result 따라 quit여부 결정
             if not ETTTP_result:
                 self.quit()
             else:
-                #Winner:ME이면 false. 나랑 결과가 겹치면 안되니까
+                # Winner:ME이면 false. 둘 다 WIN 일 수는 없으니까 false return.
                 if(rcv_msg_list[2]=="Winner:ME"):
                     result=False        
-                #Winner:YOU이면 true
+                # Winner:YOU이면 true.
                 if(rcv_msg_list[2]=="Winner:YOU"):
                     result=True        
-        else: #진 애 시점
-            #이긴애가 보낸거 받고
-            #ETTTP형식 맞는지 확인
+        else: #진 사람 시점
+            #상대방이 게임 결과 보낸게 ETTTP 맞는형식인지 확인.
             rcv_msg=self.socket.recv(SIZE).decode()
             rcv_msg_list=rcv_msg.split("\r\n")
-            #ETTTP형식 맞는지
             ETTTP_result=True if (check_msg(rcv_msg,self.recv_ip) == True) else  False
-            #result따라 quit여부 결정
+            #result 따라 quit여부 결정
             if not ETTTP_result:
                 self.quit()
             else:
-                #Winner:ME이면 True. 나랑 결과가 겹치면 안되니까
+                # Winner:ME이면 True. 
                 if(rcv_msg_list[2]=="Winner:ME"):
                     result=True        
-                #Winner:YOU이면 False
+                # Winner:YOU이면 False. 둘 다 LOSE 일 수는 없으니까 false return.
                 if(rcv_msg_list[2]=="Winner:YOU"):
                     result=False  
                 #이제 내 결과도 보내기       
                 self.socket.send(bytes(
                 "RESULT ETTTP/1.0\r\n"+
-                "Host:"+self.send_ip+"\r\n"+#to. 로 보내야 하니까
-                "Winner:YOU\r\n\r\n","utf-8"))#니가 이김            
-    
+                "Host:"+self.send_ip+"\r\n"+ 
+                "Winner:YOU\r\n\r\n","utf-8")) 
+               
         return result  #맞는지 아닌지 결과 리턴
         ######################################################  
 
@@ -458,16 +463,16 @@ class TTT(tk.Tk):
 
 
 
-def check_msg(msg, recv_ip):#recv_ip: 내 아이피. 받은 게 내 아이피인지 확인하는 것(우편주소확인)
+def check_msg(msg, recv_ip): #recv_ip: My IP. 
     '''
     Function that checks if received message is ETTTP format
     '''
     ###################  Fill Out  #######################
-    #0. 메세지를 첫 띄어쓰기 나올 때 이후만 떼어씀
+    #0. SEND,ACK,RESULT string 이후의 string만 추출하기 위해 index를 확인. 
     #변수초기화
     start_index = 1
     end_index = 1
-    if len(msg) > 0:#메세지 비어있는 것 들어올 경우 예외처리
+    if len(msg) > 0: #len(msg)==0 일 때 예외처리.
         if msg[0]=="A":#ACK
             start_index = msg.find("A")
             end_index = msg.find(" ")
@@ -477,10 +482,11 @@ def check_msg(msg, recv_ip):#recv_ip: 내 아이피. 받은 게 내 아이피인
         elif msg[0]=="R":#RESULT
             start_index = msg.find("R")
             end_index = msg.find(" ")
-    #1. 메세지를 띄어쓰기 후까지만 활용
+    #1. SEND,ACK,RESULT string 이후의 string만 활용
     msg = remove_substring(msg, start_index, end_index)
     Ttext_list=msg.split("\r\n")
-    if (Ttext_list[0]!=("ETTTP/1.0"))or(Ttext_list[1]!="Host:"+str(recv_ip)):#ETTTP형식에 맞지 않으면, 나한테 온 거 맞는지
+    if (Ttext_list[0]!=("ETTTP/1.0"))or(Ttext_list[1]!="Host:"+str(recv_ip)):
+      #1) ETTTP 형식에 맞는지 확인 or 2) 내 IP주소와 받은 message에서의 IP주소가 같은지 확인.
             print("ETTTP 형식에 맞지 않는 메시지입니다.")          
             print("비정상 종료")
             return False
