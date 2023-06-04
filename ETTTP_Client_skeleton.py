@@ -57,7 +57,7 @@ if __name__ == '__main__':
             # Send ACK 
             client_socket.send(bytes("ACK ETTTP/1.0\r\n"
             +"Host:"+SERVER_IP+"\r\n"
-            +"First-Move: ME\r\n\r\n" ,"utf-8"))
+            +"First-Move: YOU\r\n\r\n" ,"utf-8"))#server가 시작이기 때문에 client시점 YOU가 시작이라고 보냄.
         else :
           # 만약 첫 시작이 client라면
             start=1
@@ -65,7 +65,7 @@ if __name__ == '__main__':
             # Send ACK 
             client_socket.send(bytes("ACK ETTTP/1.0\r\n"
             +"Host:"+SERVER_IP+"\r\n"
-            +"First-Move: YOU\r\n\r\n" ,"utf-8"))
+            +"First-Move: ME\r\n\r\n" ,"utf-8"))
         ###################################################################
         
         # Start game
